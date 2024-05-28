@@ -36,48 +36,45 @@ extension ARViewController: ARSessionDelegate {
         for case let planeAnchor as ARPlaneAnchor in anchors {
             let anchorEntity: AnchorEntity = .init(anchor: planeAnchor)
             
-            let mesh: MeshResource = .generateSphere(radius: 1E-2)
-//            let mesh_2: MeshResource = .generate(from: planeAnchor.geometry.vertices)
-//            let mesh_2: MeshResource = .generatePlane(width: planeAnchor.planeExtent.width, height: planeAnchor.planeExtent.height)
+            //
             
-            let text: String
-            switch planeAnchor.classification {
-            case .ceiling:
-                text = "Ceiling"
-            case .wall:
-                text = "Wall"
-            case .floor:
-                text = "Table"
-            case .table:
-                text = "Table"
-            case .seat:
-                text = "Seat"
-            case .window:
-                text = "Window"
-            case .door:
-                text = "Door"
-            default:
-                text = "Unknown"
-            }
+            let geometryMesh: MeshResource = planeAnchor.geometry.meshResource!
             
-            let position: SIMD3<Float> = anchorEntity.position
-            let testMesh: MeshResource = .generateText(text, containerFrame: .init(origin: .zero, size: .init(width: 100.0, height: 100.0)))
-            
-            let modelEntity: ModelEntity = .init(
-                mesh: mesh,
+            let geometryEntity: ModelEntity = .init(
+                mesh: geometryMesh,
                 materials: [
-                    SimpleMaterial(color: .white, isMetallic: true)
+                    SimpleMaterial(color: .white.withAlphaComponent(0.5), isMetallic: false)
                 ]
             )
             
-            modelEntity.position = planeAnchor.center
-            modelEntity.transform = .init(
+            geometryEntity.name = "Geometry"
+            
+            anchorEntity.addChild(geometryEntity, preservingWorldTransform: true)
+            
+            //
+            
+            let textMesh: MeshResource = .generateText(planeAnchor.classification.text)
+            
+            let textEntity: ModelEntity = .init(
+                mesh: textMesh, 
+                materials: [
+                    SimpleMaterial(color: .systemPink, isMetallic: false)
+                ]
+            )
+            
+            textEntity.transform = .init(
                 scale: .init(x: 0.01, y: 0.01, z: 0.01),
                 rotation: .init(angle: -.pi / 2.0, axis: .init(x: 1.0, y: .zero, z: .zero)),
                 translation: .zero
             )
             
-            anchorEntity.addChild(modelEntity)
+            textEntity.position = planeAnchor.center
+            
+            textEntity.name = "Text"
+            
+            anchorEntity.addChild(textEntity)
+            
+            //
             
             arView.scene.addAnchor(anchorEntity)
         }
@@ -98,31 +95,53 @@ extension ARViewController: ARSessionDelegate {
                 continue
             }
             
-            let text: String
-            switch planeAnchor.classification {
-            case .ceiling:
-                text = "Ceiling"
-            case .wall:
-                text = "Wall"
-            case .floor:
-                text = "Table"
-            case .table:
-                text = "Table"
-            case .seat:
-                text = "Seat"
-            case .window:
-                text = "Window"
-            case .door:
-                text = "Door"
-            default:
-                text = "Unknown"
-            }
-            print(text)
-            
             for case let modelEntity as ModelEntity in anchorEntity.children {
-                modelEntity.model?.mesh = .generateText(text)
-                modelEntity.position = planeAnchor.center
+                let name: String = modelEntity.name
+                
+                if name == "Geometry" {
+                    if let meshResource: MeshResource = planeAnchor.geometry.meshResource {
+                        modelEntity.model?.mesh = meshResource
+                    } else {
+                        modelEntity.model = nil
+                    }
+                } else if name == "Text" {
+                    modelEntity.model?.mesh = .generateText(planeAnchor.classification.text)
+                    modelEntity.position = planeAnchor.center
+                }
             }
         }
+    }
+}
+
+extension ARPlaneAnchor.Classification {
+    fileprivate var text: String {
+        switch self {
+        case .ceiling:
+            return "Ceiling"
+        case .wall:
+            return "Wall"
+        case .floor:
+            return "Table"
+        case .table:
+            return "Table"
+        case .seat:
+            return "Seat"
+        case .window:
+            return "Window"
+        case .door:
+            return "Door"
+        default:
+            return "Unknown"
+        }
+    }
+}
+
+extension ARPlaneGeometry {
+    fileprivate var meshResource: MeshResource? {
+        var meshDescriptor: MeshDescriptor = .init()
+        meshDescriptor.positions = .init(boundaryVertices)
+        meshDescriptor.primitives = .triangles(triangleIndices.map { UInt32($0) })
+        
+        return try? .generate(from: [meshDescriptor])
     }
 }

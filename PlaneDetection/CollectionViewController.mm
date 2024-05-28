@@ -8,6 +8,7 @@
 #import "CollectionViewController.h"
 #import <ARKit/ARKit.h>
 #import "PlaneDetection-Swift.h"
+#import "MTARViewController.h"
 
 __attribute__((objc_direct_members))
 @interface CollectionViewController ()
@@ -62,7 +63,8 @@ __attribute__((objc_direct_members))
 
 - (NSArray<Class> *)viewControllerClasses {
     return @[
-        ARViewController.class
+        ARViewController.class,
+        MTARViewController.class
     ];
 }
 
@@ -79,15 +81,11 @@ __attribute__((objc_direct_members))
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSInteger item = indexPath.item;
+    Class isa = self.viewControllerClasses[indexPath.item];
     
-    if (item == 0) {
-        ARViewController *viewController = [ARViewController new];
-        [self.navigationController pushViewController:viewController animated:YES];
-        [viewController release];
-    } else {
-        abort();
-    }
+    UIViewController *viewController = (UIViewController *)[isa new];
+    [self.navigationController pushViewController:viewController animated:YES];
+    [viewController release];
 }
 
 @end

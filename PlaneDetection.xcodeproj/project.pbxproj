@@ -14,6 +14,16 @@
 		4FD722232C0398EF00036B5C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FD722222C0398EF00036B5C /* main.m */; };
 		4FD7222B2C03995000036B5C /* CollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4FD7222A2C03995000036B5C /* CollectionViewController.mm */; };
 		4FD7222E2C039AA600036B5C /* ARViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD7222D2C039AA600036B5C /* ARViewController.swift */; };
+		4FD722852C05DD6400036B5C /* MTARViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4FD722842C05DD6400036B5C /* MTARViewController.mm */; };
+		4FD722882C05DD6D00036B5C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD722872C05DD6D00036B5C /* UIKit.framework */; };
+		4FD7228A2C05DD7100036B5C /* ARKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD722892C05DD7100036B5C /* ARKit.framework */; };
+		4FD7228D2C05DD7600036B5C /* RealityFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD7228B2C05DD7600036B5C /* RealityFoundation.framework */; };
+		4FD7228E2C05DD7600036B5C /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD7228C2C05DD7600036B5C /* RealityKit.framework */; };
+		4FD722912C05DD7D00036B5C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD7228F2C05DD7D00036B5C /* Metal.framework */; };
+		4FD722922C05DD7D00036B5C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD722902C05DD7D00036B5C /* MetalKit.framework */; };
+		4FD722952C05DE2A00036B5C /* MTARView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4FD722942C05DE2A00036B5C /* MTARView.mm */; };
+		4FD722972C06248300036B5C /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FD722962C06248300036B5C /* CoreVideo.framework */; };
+		4FD722992C0625E100036B5C /* shader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 4FD722982C0625E100036B5C /* shader.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +40,18 @@
 		4FD7222A2C03995000036B5C /* CollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionViewController.mm; sourceTree = "<group>"; };
 		4FD7222C2C039AA600036B5C /* PlaneDetection-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PlaneDetection-Bridging-Header.h"; sourceTree = "<group>"; };
 		4FD7222D2C039AA600036B5C /* ARViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewController.swift; sourceTree = "<group>"; };
+		4FD722832C05DD6400036B5C /* MTARViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTARViewController.h; sourceTree = "<group>"; };
+		4FD722842C05DD6400036B5C /* MTARViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MTARViewController.mm; sourceTree = "<group>"; };
+		4FD722872C05DD6D00036B5C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		4FD722892C05DD7100036B5C /* ARKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ARKit.framework; path = System/Library/Frameworks/ARKit.framework; sourceTree = SDKROOT; };
+		4FD7228B2C05DD7600036B5C /* RealityFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityFoundation.framework; path = System/Library/Frameworks/RealityFoundation.framework; sourceTree = SDKROOT; };
+		4FD7228C2C05DD7600036B5C /* RealityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityKit.framework; path = System/Library/Frameworks/RealityKit.framework; sourceTree = SDKROOT; };
+		4FD7228F2C05DD7D00036B5C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		4FD722902C05DD7D00036B5C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		4FD722932C05DE2A00036B5C /* MTARView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTARView.h; sourceTree = "<group>"; };
+		4FD722942C05DE2A00036B5C /* MTARView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MTARView.mm; sourceTree = "<group>"; };
+		4FD722962C06248300036B5C /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		4FD722982C0625E100036B5C /* shader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = shader.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,6 +59,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FD722972C06248300036B5C /* CoreVideo.framework in Frameworks */,
+				4FD7228A2C05DD7100036B5C /* ARKit.framework in Frameworks */,
+				4FD7228D2C05DD7600036B5C /* RealityFoundation.framework in Frameworks */,
+				4FD722912C05DD7D00036B5C /* Metal.framework in Frameworks */,
+				4FD722922C05DD7D00036B5C /* MetalKit.framework in Frameworks */,
+				4FD7228E2C05DD7600036B5C /* RealityKit.framework in Frameworks */,
+				4FD722882C05DD6D00036B5C /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -48,6 +77,7 @@
 			children = (
 				4FD7220F2C0398EF00036B5C /* PlaneDetection */,
 				4FD7220E2C0398EF00036B5C /* Products */,
+				4FD722862C05DD6D00036B5C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +99,11 @@
 				4FD722292C03995000036B5C /* CollectionViewController.h */,
 				4FD7222A2C03995000036B5C /* CollectionViewController.mm */,
 				4FD7222D2C039AA600036B5C /* ARViewController.swift */,
+				4FD722832C05DD6400036B5C /* MTARViewController.h */,
+				4FD722842C05DD6400036B5C /* MTARViewController.mm */,
+				4FD722932C05DE2A00036B5C /* MTARView.h */,
+				4FD722942C05DE2A00036B5C /* MTARView.mm */,
+				4FD722982C0625E100036B5C /* shader.metal */,
 				4FD7221C2C0398EF00036B5C /* Assets.xcassets */,
 				4FD7221E2C0398EF00036B5C /* LaunchScreen.storyboard */,
 				4FD722212C0398EF00036B5C /* Info.plist */,
@@ -76,6 +111,20 @@
 				4FD7222C2C039AA600036B5C /* PlaneDetection-Bridging-Header.h */,
 			);
 			path = PlaneDetection;
+			sourceTree = "<group>";
+		};
+		4FD722862C05DD6D00036B5C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4FD722962C06248300036B5C /* CoreVideo.framework */,
+				4FD7228F2C05DD7D00036B5C /* Metal.framework */,
+				4FD722902C05DD7D00036B5C /* MetalKit.framework */,
+				4FD7228B2C05DD7600036B5C /* RealityFoundation.framework */,
+				4FD7228C2C05DD7600036B5C /* RealityKit.framework */,
+				4FD722892C05DD7100036B5C /* ARKit.framework */,
+				4FD722872C05DD6D00036B5C /* UIKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -148,10 +197,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FD722852C05DD6400036B5C /* MTARViewController.mm in Sources */,
 				4FD7222B2C03995000036B5C /* CollectionViewController.mm in Sources */,
 				4FD722122C0398EF00036B5C /* AppDelegate.m in Sources */,
 				4FD722232C0398EF00036B5C /* main.m in Sources */,
+				4FD722992C0625E100036B5C /* shader.metal in Sources */,
 				4FD722152C0398EF00036B5C /* SceneDelegate.m in Sources */,
+				4FD722952C05DE2A00036B5C /* MTARView.mm in Sources */,
 				4FD7222E2C039AA600036B5C /* ARViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
