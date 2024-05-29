@@ -46,7 +46,10 @@ __attribute__((objc_direct_members))
 }
 
 - (void)dealloc {
-    [_session release];
+    if (auto session = _session) {
+        [session pause];
+        [session release];
+    }
     [_coachingOverlayView release];
     [_device release];
     [_samplerState release];
@@ -191,6 +194,11 @@ __attribute__((objc_direct_members))
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
     // TODO: https://developer.apple.com/documentation/arkit/arkit_in_ios/displaying_an_ar_experience_with_metal?language=objc
     CVPixelBufferRef capturedImage = frame.capturedImage;
+    
+    if (CVPixelBufferGetPlaneCount(capturedImage) < 2) {
+        return;
+    }
+    
     ARCamera *camera = frame.camera;
     CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
     
@@ -201,33 +209,56 @@ __attribute__((objc_direct_members))
     id<CAMetalDrawable> drawable = [metalLayer nextDrawable];
     if (drawable == nil) return;
     
-    size_t width = CVPixelBufferGetWidth(capturedImage);
-    size_t height = CVPixelBufferGetHeight(capturedImage);
-    
-    CVMetalTextureRef metalTextureRef = NULL;
+    CVMetalTextureRef metalTextureYRef = NULL;
     CVReturn result = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
                                                                 _textureCacheRef,
                                                                 capturedImage,
                                                                 NULL,
-                                                                MTLPixelFormatBGRA8Unorm,
-                                                                width,
-                                                                height,
+                                                                MTLPixelFormatR8Unorm,
+                                                                CVPixelBufferGetWidthOfPlane(capturedImage, 0),
+                                                                CVPixelBufferGetHeightOfPlane(capturedImage, 0),
                                                                 0,
-                                                                &metalTextureRef);
+                                                                &metalTextureYRef);
     
-    if (metalTextureRef == NULL || result != kCVReturnSuccess) {
-        if (metalTextureRef == NULL) {
-            CVPixelBufferRelease(metalTextureRef);
+    if (metalTextureYRef == NULL || result != kCVReturnSuccess) {
+        if (metalTextureYRef == NULL) {
+            CVPixelBufferRelease(metalTextureYRef);
         }
         
         CVMetalTextureCacheFlush(_textureCacheRef, 0);
         return;
     }
     
-    id<MTLTexture> texture = CVMetalTextureGetTexture(metalTextureRef);
-    CVPixelBufferRelease(metalTextureRef);
+    CVMetalTextureRef metalTextureCbCrRef = NULL;
+    result = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
+                                                       _textureCacheRef,
+                                                       capturedImage,
+                                                       NULL,
+                                                       MTLPixelFormatRG8Unorm,
+                                                       CVPixelBufferGetWidthOfPlane(capturedImage, 1),
+                                                       CVPixelBufferGetHeightOfPlane(capturedImage, 1),
+                                                       1,
+                                                       &metalTextureCbCrRef);
+    
+    if (metalTextureCbCrRef == NULL || result != kCVReturnSuccess) {
+        if (metalTextureCbCrRef == NULL) {
+            CVPixelBufferRelease(metalTextureCbCrRef);
+        }
+        
+        CVMetalTextureCacheFlush(_textureCacheRef, 0);
+        return;
+    }
+    
+    id<MTLTexture> textureY = CVMetalTextureGetTexture(metalTextureYRef);
+    CVPixelBufferRelease(metalTextureYRef);
+    
+    id<MTLTexture> textureCbCr = CVMetalTextureGetTexture(metalTextureCbCrRef);
+    CVPixelBufferRelease(metalTextureCbCrRef);
     
     //
+    
+    size_t width = CVPixelBufferGetWidthOfPlane(capturedImage, 0);
+    size_t height = CVPixelBufferGetHeightOfPlane(capturedImage, 0);
     
     CGSize drawableSize = drawable.layer.drawableSize;
     
@@ -330,8 +361,10 @@ __attribute__((objc_direct_members))
         [buffer release];
     }
     
-    [renderCommandEncoder setFragmentTexture:texture atIndex:0];
+    [renderCommandEncoder setFragmentTexture:textureY atIndex:0];
+    [renderCommandEncoder setFragmentTexture:textureCbCr atIndex:1];
     [renderCommandEncoder setFragmentSamplerState:_samplerState atIndex:0];
+    [renderCommandEncoder setFragmentSamplerState:_samplerState atIndex:1];
     [renderCommandEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
     [renderCommandEncoder endEncoding];
     
