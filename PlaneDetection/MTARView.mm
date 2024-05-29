@@ -56,6 +56,15 @@ __attribute__((objc_direct_members))
     [super dealloc];
 }
 
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    CAMetalLayer *metalLayer= (CAMetalLayer *)self.layer;
+    CGSize size = metalLayer.bounds.size;
+    CGFloat displayScale = self.traitCollection.displayScale; // TODO: Observe
+    metalLayer.drawableSize = CGSizeMake(size.width * displayScale, size.height * displayScale);
+}
+
 - (void)commonInit_MTARView __attribute__((objc_direct)) {
     ARCoachingOverlayView *coachingOverlayView = [ARCoachingOverlayView new];
     coachingOverlayView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -180,13 +189,20 @@ __attribute__((objc_direct_members))
 #pragma mark - ARSessionDelegate
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
+    // TODO: https://developer.apple.com/documentation/arkit/arkit_in_ios/displaying_an_ar_experience_with_metal?language=objc
     CVPixelBufferRef capturedImage = frame.capturedImage;
     ARCamera *camera = frame.camera;
     CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
     
+    if (metalLayer.device == nil) {
+        metalLayer.device = self.device;
+    }
+    
     id<CAMetalDrawable> drawable = [metalLayer nextDrawable];
     if (drawable == nil) return;
-
+    
+    size_t width = CVPixelBufferGetWidth(capturedImage);
+    size_t height = CVPixelBufferGetHeight(capturedImage);
     
     CVMetalTextureRef metalTextureRef = NULL;
     CVReturn result = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
@@ -213,9 +229,7 @@ __attribute__((objc_direct_members))
     
     //
     
-    CGSize drawableSize = metalLayer.drawableSize;
-    size_t width = CVPixelBufferGetWidth(capturedImage);
-    size_t height = CVPixelBufferGetHeight(capturedImage);
+    CGSize drawableSize = drawable.layer.drawableSize;
     
     // texture를 drawableSize에 맞게 Aspect Fill
     float scaleX;
@@ -223,8 +237,9 @@ __attribute__((objc_direct_members))
     /*
      1. 아래처럼 Captured Image가 있다고 가정하자
      +-----------------+
+     |                 |
      |     Captured    | 600x300
-     |       Image     |
+     |      Image      |
      |                 |
      +-----------------+
      
@@ -236,33 +251,96 @@ __attribute__((objc_direct_members))
      Scale X (2) = Scale X (1) * (Height / Width) = 1.5
      Scale Y (2) = Scale Y (1) = 2.0
      
-     +------+
-     |      |
-     |      |
-     |      |
-     | Metal| 800x1200
-     | Layer|
-     |      |
-     |      |
-     +------+
+     +-------+
+     |       |
+     |       |
+     |       |
+     | Metal | 800x1200
+     | Layer |
+     |       |
+     |       |
+     +-------+
      */
     if (width < height) {
         scaleX = 1.f;
-        scaleY = (height / width);
+        scaleY = (float(height) / float(width));
     } else {
-        scaleX = (width / height);
+        scaleX = (float(width) / float(height));
         scaleY = 1.f;
     }
     
     if (drawableSize.width < drawableSize.height) {
-        scaleX *= (drawableSize.height / drawableSize.width);
+        scaleX *= (float)(drawableSize.height / drawableSize.width);
     } else {
-        scaleY *= (drawableSize.width / drawableSize.height);
+        scaleY *= (float)(drawableSize.width / drawableSize.height);
     }
+    
+    //
+    
+    float vertexData[16] = {
+        -scaleX, -scaleY, 0.f, 1.f,
+        scaleX, -scaleY, 0.f, 1.f,
+        -scaleX, scaleY, 0.f, 1.f,
+        scaleX, scaleY, 0.f, 1.f
+    };
+    
+    id<MTLBuffer> vertexCoordBuffer = [_device newBufferWithBytes:vertexData length:sizeof(vertexData) options:0];
+    
+    float textureData[8] = {
+        0.f, 1.f,
+        1.f, 1.f,
+        0.f, 0.f,
+        1.f, 0.f
+    };
+    
+    id<MTLBuffer> textureCoordBuffer = [_device newBufferWithBytes:textureData length:sizeof(textureData) options:0];
+    
+    //
+    
+    MTLCommandBufferDescriptor *commandBufferDescriptor = [MTLCommandBufferDescriptor new];
+    commandBufferDescriptor.errorOptions = MTLCommandBufferErrorOptionEncoderExecutionStatus;
+    commandBufferDescriptor.retainedReferences = YES;
+    
+    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBufferWithDescriptor:commandBufferDescriptor];
+    [commandBufferDescriptor release];
+    
+    //
+    
+    MTLRenderPassDescriptor *renderPassDescriptor = [MTLRenderPassDescriptor new];
+    MTLRenderPassColorAttachmentDescriptor *firstColorAttachment = renderPassDescriptor.colorAttachments[0];
+    firstColorAttachment.texture = drawable.texture;
+    firstColorAttachment.loadAction = MTLLoadActionClear;
+    firstColorAttachment.storeAction = MTLStoreActionStore;
+    firstColorAttachment.clearColor = MTLClearColorMake(1., 1., 1., 1.);
+    
+    id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
+    [renderPassDescriptor release];
+    renderCommandEncoder.label = @"MTARView";
+    [renderCommandEncoder setRenderPipelineState:_renderPipelineState];
+    
+    id<MTLBuffer> vertexBuffers[2] = {
+        vertexCoordBuffer,
+        textureCoordBuffer
+    };
+    NSUInteger offsets[2] = {0, 0};
+    
+    [renderCommandEncoder setVertexBuffers:(id<MTLBuffer> *)&vertexBuffers offsets:(NSUInteger *)&offsets withRange:NSMakeRange(0, 2)];
+    
+    for (id<MTLBuffer> buffer : vertexBuffers) {
+        [buffer release];
+    }
+    
+    [renderCommandEncoder setFragmentTexture:texture atIndex:0];
+    [renderCommandEncoder setFragmentSamplerState:_samplerState atIndex:0];
+    [renderCommandEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+    [renderCommandEncoder endEncoding];
+    
+    [commandBuffer presentDrawable:drawable];
+    [commandBuffer commit];
 }
 
 - (void)session:(ARSession *)session didAddAnchors:(NSArray<__kindof ARAnchor *> *)anchors {
-    NSLog(@"%@", anchors);
+    
 }
 
 - (void)session:(ARSession *)session didUpdateAnchors:(NSArray<__kindof ARAnchor *> *)anchors {

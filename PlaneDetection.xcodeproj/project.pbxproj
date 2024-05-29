@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4FA765E72C070A8C00670542 /* PixelBufferRenderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA765E62C070A8C00670542 /* PixelBufferRenderView.swift */; };
 		4FD722122C0398EF00036B5C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FD722112C0398EF00036B5C /* AppDelegate.m */; };
 		4FD722152C0398EF00036B5C /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FD722142C0398EF00036B5C /* SceneDelegate.m */; };
 		4FD7221D2C0398EF00036B5C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FD7221C2C0398EF00036B5C /* Assets.xcassets */; };
@@ -27,6 +28,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4FA765E62C070A8C00670542 /* PixelBufferRenderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PixelBufferRenderView.swift; sourceTree = "<group>"; };
 		4FD7220D2C0398EF00036B5C /* PlaneDetection.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlaneDetection.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FD722102C0398EF00036B5C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4FD722112C0398EF00036B5C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 				4FD722842C05DD6400036B5C /* MTARViewController.mm */,
 				4FD722932C05DE2A00036B5C /* MTARView.h */,
 				4FD722942C05DE2A00036B5C /* MTARView.mm */,
+				4FA765E62C070A8C00670542 /* PixelBufferRenderView.swift */,
 				4FD722982C0625E100036B5C /* shader.metal */,
 				4FD7221C2C0398EF00036B5C /* Assets.xcassets */,
 				4FD7221E2C0398EF00036B5C /* LaunchScreen.storyboard */,
@@ -200,6 +203,7 @@
 				4FD722852C05DD6400036B5C /* MTARViewController.mm in Sources */,
 				4FD7222B2C03995000036B5C /* CollectionViewController.mm in Sources */,
 				4FD722122C0398EF00036B5C /* AppDelegate.m in Sources */,
+				4FA765E72C070A8C00670542 /* PixelBufferRenderView.swift in Sources */,
 				4FD722232C0398EF00036B5C /* main.m in Sources */,
 				4FD722992C0625E100036B5C /* shader.metal in Sources */,
 				4FD722152C0398EF00036B5C /* SceneDelegate.m in Sources */,
