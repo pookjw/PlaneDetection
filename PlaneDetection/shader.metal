@@ -14,12 +14,12 @@ namespace pixel_buffer_shader {
         float2 texture_coord [[user(texturecoord)]];
     };
     
-    vertex vertex_io vertex_function(const device packed_float4 *positions [[buffer(0)]],
-                                     const device packed_float2 *texture_coords [[buffer(1)]],
+    vertex vertex_io vertex_function(const device float2 *positions [[buffer(0)]],
+                                     const device float2 *texture_coords [[buffer(1)]],
                                      uint index [[vertex_id]])
     {
         return {
-            .position = positions[index],
+            .position = float4(positions[index], 0.0, 1.0),
             .texture_coord = texture_coords[index]
         };
     }

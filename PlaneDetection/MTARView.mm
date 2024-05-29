@@ -257,74 +257,32 @@ __attribute__((objc_direct_members))
     
     //
     
-    size_t width = CVPixelBufferGetWidthOfPlane(capturedImage, 0);
-    size_t height = CVPixelBufferGetHeightOfPlane(capturedImage, 0);
-    
-    CGSize drawableSize = drawable.layer.drawableSize;
-    
-    // texture를 drawableSize에 맞게 Aspect Fill
-    float scaleX;
-    float scaleY;
-    /*
-     1. 아래처럼 Captured Image가 있다고 가정하자
-     +-----------------+
-     |                 |
-     |     Captured    | 600x300
-     |      Image      |
-     |                 |
-     +-----------------+
-     
-     2. 우선 정사각형 안에서 Aspect Fill하게 Rendering 해야 한다면 아래처럼 Scale을 곱해줘야 한다.
-     Scale X (1) = 1.0
-     Scale Y (1) = (Height / Width) = 2.0
-     
-     3. 그 정사각형을 아래 사각형 안에서 Aspect Fill 하게 보여야 한다면 아래처럼 Scale을 곱해줘야 한다.
-     Scale X (2) = Scale X (1) * (Height / Width) = 1.5
-     Scale Y (2) = Scale Y (1) = 2.0
-     
-     +-------+
-     |       |
-     |       |
-     |       |
-     | Metal | 800x1200
-     | Layer |
-     |       |
-     |       |
-     +-------+
-     */
-    if (width < height) {
-        scaleX = 1.f;
-        scaleY = (float(height) / float(width));
-    } else {
-        scaleX = (float(width) / float(height));
-        scaleY = 1.f;
-    }
-    
-    if (drawableSize.width < drawableSize.height) {
-        scaleX *= (float)(drawableSize.height / drawableSize.width);
-    } else {
-        scaleY *= (float)(drawableSize.width / drawableSize.height);
-    }
-    
-    //
-    
-    float vertexData[16] = {
-        -scaleX, -scaleY, 0.f, 1.f,
-        scaleX, -scaleY, 0.f, 1.f,
-        -scaleX, scaleY, 0.f, 1.f,
-        scaleX, scaleY, 0.f, 1.f
-    };
-    
-    id<MTLBuffer> vertexCoordBuffer = [_device newBufferWithBytes:vertexData length:sizeof(vertexData) options:0];
-    
-    float textureData[8] = {
-        0.f, 1.f,
-        1.f, 1.f,
-        0.f, 0.f,
-        1.f, 0.f
+    float textureData[16] = {
+        -1.0, -1.0,  0.0, 1.0,
+        1.0, -1.0,  1.0, 1.0,
+        -1.0,  1.0,  0.0, 0.0,
+        1.0,  1.0,  1.0, 0.0,
     };
     
     id<MTLBuffer> textureCoordBuffer = [_device newBufferWithBytes:textureData length:sizeof(textureData) options:0];
+    
+    CGAffineTransform displayToCameraTransform = CGAffineTransformInvert([frame displayTransformForOrientation:UIInterfaceOrientationLandscapeRight viewportSize:metalLayer.drawableSize]);
+    
+    float vertexData[16] = {
+        -1.0, -1.0,  0.0, 1.0,
+        1.0, -1.0,  1.0, 1.0,
+        -1.0,  1.0,  0.0, 0.0,
+        1.0,  1.0,  1.0, 0.0,
+    };
+    for (NSInteger index = 0; index < 4; index++) {
+        NSInteger textureCoordIndex = 4 * index + 2;
+        CGPoint textureCoord = CGPointMake(textureData[textureCoordIndex], textureData[textureCoordIndex + 1]);
+        CGPoint transformedCoord = CGPointApplyAffineTransform(textureCoord, displayToCameraTransform);
+        vertexData[textureCoordIndex] = transformedCoord.x;
+        vertexData[textureCoordIndex + 1] = transformedCoord.y;
+    }
+    
+    id<MTLBuffer> vertexDataBuffer = [_device newBufferWithBytes:vertexData length:sizeof(vertexData) options:0];
     
     //
     
@@ -350,7 +308,7 @@ __attribute__((objc_direct_members))
     [renderCommandEncoder setRenderPipelineState:_renderPipelineState];
     
     id<MTLBuffer> vertexBuffers[2] = {
-        vertexCoordBuffer,
+        vertexDataBuffer,
         textureCoordBuffer
     };
     NSUInteger offsets[2] = {0, 0};
@@ -364,8 +322,8 @@ __attribute__((objc_direct_members))
     [renderCommandEncoder setFragmentTexture:textureY atIndex:0];
     [renderCommandEncoder setFragmentTexture:textureCbCr atIndex:1];
     [renderCommandEncoder setFragmentSamplerState:_samplerState atIndex:0];
-    [renderCommandEncoder setFragmentSamplerState:_samplerState atIndex:1];
     [renderCommandEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+    [renderCommandEncoder popDebugGroup];
     [renderCommandEncoder endEncoding];
     
     [commandBuffer presentDrawable:drawable];
